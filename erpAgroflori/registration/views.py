@@ -3,7 +3,17 @@ from django.contrib.auth.forms import AuthenticationForm
 from .forms import RegistrationForm, CustomUserCreationForm
 from users.models import User
 from django.contrib import messages
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
+
+def redirect_log_in(request):
+    if request.user.is_authenticated:
+        return redirect("home")
+    else:
+        return redirect("log-in")
+
+def logout_view(request):
+    logout(request)
+    return redirect("log-in")
 
 # Create your views here.
 def register(request):
