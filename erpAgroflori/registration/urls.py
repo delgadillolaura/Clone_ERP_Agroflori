@@ -1,7 +1,5 @@
 from django.urls import path
 from . import views
-import erpAgroflori.settings as settings
-from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('', views.redirect_log_in, name="redirect-log-in"),

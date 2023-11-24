@@ -49,6 +49,7 @@ class RegistrationForm(ModelForm):
     emergency_phone = PhoneNumberField()
 
     def __save__(self, commit=True):
+        super().save(commit=False)
         print (f"user_value {self.user_value}")
         if not self.user_value:
             person = Person.objects.create(user= self.user_value, blood_type =self.blood_type,
