@@ -53,3 +53,5 @@ class TransactionForm(ModelForm):
     class Meta:
         model = Transaction
         fields = ["date", "method_of_payment", "currency", "amount", "description", "category", "user"]
+
+    
