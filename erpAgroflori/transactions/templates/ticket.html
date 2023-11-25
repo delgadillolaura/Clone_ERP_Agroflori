@@ -1,1 +1,21 @@
 {%extends 'base.html'%}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block title %}Ticket sale{% endblock %}
+{% block content %}
+    <h1>REGISTRAR VENTA DE ENTRADAS</h1>
+    <form method="POST" class="form-group">
+        {% csrf_token %}
+        {% crispy sale_form%}
+        <form method="post">
+            {{ formset.management_form }}
+            {% for form in formset %}
+                {{ form }}
+                <label>Monto:<input id="{{ form.prefix }}-amount" type="text" value='0' readonly></label>
+                <hr>
+            {% endfor %}
+        </form>
+        
+    </form>
+    <script src="{% static 'tickets.js' %}"></script>
+{% endblock %}

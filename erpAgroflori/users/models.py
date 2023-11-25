@@ -23,10 +23,13 @@ class Person (models.Model):
     
     def __str__(self) -> str:
         return self.user.__str__()
+    
 class WorkRecord(models.Model):
     person = models.ForeignKey(User, on_delete=models.CASCADE, related_name="worker")
     date = models.DateField(auto_now_add=False, default= date.today, null=False, blank=False)
     description = models.CharField(max_length=300, blank=False, null=False)
-
+    
+    def __str__(self) -> str:
+        return f"work_record_{self.person.__str__()}_{self.date}"
 
 
