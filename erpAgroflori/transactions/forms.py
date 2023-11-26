@@ -57,41 +57,69 @@ class TransactionForm(ModelForm):
         fields = ["date", "method_of_payment", "currency", "amount", "description", "category", "user"]
 
 class TicketSaleForm(ModelForm):
-    transaction = forms.CharField(widget=forms.HiddenInput())
+    amount = forms.IntegerField(widget=forms.NumberInput(attrs={'id': 'amount-input-id', 'readonly': 'readonly'}))
+    user = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.user_user = kwargs.pop('user', None)
+        super(TicketSaleForm, self).__init__(*args, **kwargs)    
+        self.fields['amount'].initial = 0  
+
+        if self.user_user:
+            self.fields['user'].initial = self.user_user
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data['user'] = self.user_user
+        return cleaned_data
+    
     class Meta:
         model = TicketSale
-        fields = ["date", "method_of_payment", "amount"]
-        #["date", "method_of_payment", "currency", "amount", "description", "category", "user"]
-
-class CustomModelMultipleChoiceField(forms.ModelMultipleChoiceField):
-    def __init__(self, queryset=None, *args, **kwargs):
-        super(CustomModelMultipleChoiceField, self).__init__(queryset, widget=forms.SelectMultiple(), *args, **kwargs)
-        id_ticket = SystemTypeCategory.objects.filter(name='ticket').first().id
-        queryset =  SystemType.objects.filter(category=id_ticket)
-        self.choices = [(obj.unitary_price, obj.__str__()) for obj in queryset]
+        fields = ["date", "method_of_payment", "amount", 'user']
+    
+class CustomChoiceField(forms.ModelChoiceField):
+    def __init__(self, *args, **kwargs):
+        queryset = kwargs.pop('queryset', None)
+        super(CustomChoiceField, self).__init__(queryset, *args, **kwargs)
+        
+        if queryset is not None:
+            self.choices = [(obj.id, f"{obj}:{obj.unitary_price}") for obj in queryset]
+  #         self.choices = [(f"{obj.unitary_price }-{obj.id}", obj) for obj in queryset]
 
 class TicketSaleDetailForm(ModelForm):
     
     quantity = forms.IntegerField(widget=forms.NumberInput())
-    ticket_type=CustomModelMultipleChoiceField()
 
-    class Meta:
-        model = TicketSaleDetail
-        fields = ['ticket_type', 'promotion_discount', 'promotion_description' ,'ticket_sale', 'quantity'] 
-    
     def __init__(self, *args, **kwargs):
         super(TicketSaleDetailForm, self).__init__(*args, **kwargs)
 
         category_type = 'ticket'
-        id_ticket = SystemTypeCategory.objects.filter(name=category_type).first().id
-        self.cat_queryset =  SystemType.objects.filter(category=id_ticket)
-        self.fields['ticket_type'].queryset =self.cat_queryset
-        self.fields['ticket_type'].initial = self.cat_queryset.first()
-        self.fields['ticket_type'].widget.attrs['id'] = f"{self.prefix}-ticket-type"
-        self.fields['quantity'].widget.attrs['id'] = f"{self.prefix}-quantity"
-        self.fields['quantity'].widget.attrs['class'] = f"quantity-class"
-
-
-
-TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1)
+        ticket_types = SystemTypeCategory.objects.filter(name=category_type)
+        
+        if ticket_types:
+            id_ticket= ticket_types.first().id
+            cat_queryset =  SystemType.objects.filter(category=id_ticket)
+            self.fields['ticket_type'] = CustomChoiceField(queryset=cat_queryset)
+            self.fields['ticket_type'].queryset = cat_queryset
+            #self.fields['ticket_type'].initial = cat_queryset.first()
+            self.fields['ticket_type'].widget.attrs['id'] = f"{self.prefix}-ticket-type"
+            self.fields['ticket_type'].widget.attrs['class'] = f"ticket-type-class"
+            self.fields['quantity'].initial = 0
+            self.fields['quantity'].widget.attrs['id'] = f"{self.prefix}-quantity"
+            self.fields['quantity'].widget.attrs['class'] = f"quantity-class"
+            self.fields['promotion_discount'].initial = 0
+    
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+    
+    class Meta:
+        model = TicketSaleDetail
+        fields = ['ticket_type', 'promotion_discount', 'promotion_description' ,'ticket_sale', 'quantity'] 
+    
+    
+     
+ 
+TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=1)
 
