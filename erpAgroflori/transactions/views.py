@@ -20,6 +20,8 @@ def register_ticket_sale(request):
         
         if sale_form.is_valid():
             ticket_sale = sale_form.save(commit=True)
+            ticket_sale.transaction_ptr.category = "IN"
+            ticket_sale.transaction_ptr.save()
             formset = TicketSaleFormSet(request.POST, instance=ticket_sale)
             if formset.is_valid():
                 formset.save()
