@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
@@ -15,9 +15,20 @@ def make_transaction(request):
     
 def register_ticket_sale(request):
     if request.method == 'POST':
-        sale_form = TicketSaleForm(request.POST)
-        formset = TicketSaleFormSet()
+        sale_form = TicketSaleForm(request.POST, **{'user':request.user})
+        formset = TicketSaleFormSet(request.POST)
         
+        if sale_form.is_valid():
+            ticket_sale = sale_form.save(commit=True)
+            formset = TicketSaleFormSet(request.POST, instance=ticket_sale)
+            if formset.is_valid():
+                formset.save()
+            else:
+                TicketSale.objects.filter(id=sale_form.id).delete()
+            return redirect('home')
+        else:
+            # Print or log form errors
+            print("Form is not valid:", sale_form.errors)
     else:
         sale_form = TicketSaleForm()
         formset=TicketSaleFormSet()
