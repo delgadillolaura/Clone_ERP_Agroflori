@@ -1,4 +1,7 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView
+from django.views.generic.edit import UpdateView
 from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
@@ -21,6 +24,7 @@ def register_ticket_sale(request):
         if sale_form.is_valid():
             ticket_sale = sale_form.save(commit=True)
             ticket_sale.transaction_ptr.category = "IN"
+            ticket_sale.transaction_ptr.description = f"Venta de entradas {ticket_sale.date}"
             ticket_sale.transaction_ptr.save()
             formset = TicketSaleFormSet(request.POST, instance=ticket_sale)
             if formset.is_valid():
@@ -36,3 +40,14 @@ def register_ticket_sale(request):
         formset=TicketSaleFormSet()
     return render(request, 'ticket.html', {'sale_form': sale_form, 'formset': formset})
     
+class TransactionListView(ListView):
+    model = Transaction
+    context_object_name = "transactions"
+    template_name = "transaction_list.html"
+    paginate_by = 10 
+
+class TransactionUpdateView(UpdateView):
+    model = Transaction
+    fields = '__all__'
+    template_name = "transaction_update_form.html"
+    success_url = reverse_lazy("search-transactions")

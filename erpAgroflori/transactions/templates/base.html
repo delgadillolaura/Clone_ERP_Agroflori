@@ -81,10 +81,10 @@
                                     <a href="{% url 'make-transaction' %}" class="nav-link px-0"> <span class="d-none d-sm-inline">Otras Transacciones</span></a>
                                 </li>
                                 <li>
-                                    <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Añandir Item</span></a>
+                                    <a href="{% url 'search-transactions' %}" class="nav-link px-0"> <span class="d-none d-sm-inline">Buscar Transacciones</span></a>
                                 </li>
                                 <li>
-                                    <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Gráficas</span></a>
+                                    <a href="#" class="nav-link px-0"> <span class="d-none d-sm-inline">Añandir Item</span></a>
                                 </li>
                             </ul>
                         </li>
@@ -112,12 +112,12 @@
                     </ul>
                 </div>
             </div>
-            <div id="content" name="content" class="col py-3" >
+            <div id="content" name="content" class="col px-2 py-2" >
                 <div  class="row justify-content-center"> 
-                    <div class="col-8">
-                        <div class="bottom-bar">
+                    <div class="col-10">
+                        <div class="bottom-bar mt-2">
                             <p>{{user}}</p>
-                            <i class="bi bi-person"></i>
+                            <i class="bi bi-person mx-2"></i>
                         </div> 
                         <hr class = " mt-4 mb-4">
                         {% block content %}

@@ -4,7 +4,7 @@ from .models import Transaction, TicketSale, TicketSaleDetail
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div,  Submit, Reset
 from django.core.exceptions import ValidationError
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, formset_factory
 from .models import SystemType, SystemTypeCategory
 
 class TransactionForm(ModelForm):
@@ -39,6 +39,9 @@ class TransactionForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         cleaned_data['user'] = self.user_user
+
+        if cleaned_data['category'] == 'EX':
+            cleaned_data['category'] = - cleaned_data['category']
         return cleaned_data
     
     def save(self, commit=True):
@@ -84,8 +87,7 @@ class CustomChoiceField(forms.ModelChoiceField):
         
         if queryset is not None:
             self.choices = [(obj.id, f"{obj}:{obj.unitary_price}") for obj in queryset]
-  #         self.choices = [(f"{obj.unitary_price }-{obj.id}", obj) for obj in queryset]
-
+ 
 class TicketSaleDetailForm(ModelForm):
     
     quantity = forms.IntegerField(widget=forms.NumberInput())
@@ -121,5 +123,9 @@ class TicketSaleDetailForm(ModelForm):
     
      
  
-TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=1)
+TicketSaleFormSet = inlineformset_factory(
+    TicketSale, TicketSaleDetail, form=TicketSaleDetailForm,
+    exclude=[], min_num=1, max_num=4, extra=1
+)
 
+TransactionFormSet = formset_factory(TransactionForm)
