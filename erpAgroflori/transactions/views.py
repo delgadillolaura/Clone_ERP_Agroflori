@@ -5,6 +5,7 @@ from django.views.generic.edit import UpdateView
 from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
+from django.db.models import Q
 
 # Create your views here.
 def make_transaction(request):
@@ -46,6 +47,20 @@ class TransactionListView(ListView):
     template_name = "transaction_list.html"
     paginate_by = 10 
 
+    def get_queryset(self):
+        queryset = Transaction.objects.all()  # Initial queryset
+        if (self.request.GET.get('datepicker1') is not None):
+            start_date = self.request.GET.get('datepicker1')
+            end_date = self.request.GET.get('datepicker2')
+            queryset = Transaction.objects.filter(Q(date__gte=start_date) & Q(date__lte=end_date))
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['datepicker1'] = self.request.GET.get('datepicker1', '')
+        context['datepicker2'] = self.request.GET.get('datepicker2', '')
+        return context
+    
 class TransactionUpdateView(UpdateView):
     model = Transaction
     fields = '__all__'

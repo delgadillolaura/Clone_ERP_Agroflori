@@ -4,6 +4,15 @@
 {% block title %}Transaction Search/{% endblock %}
 {% block content %}
     <h1>BÚSQUEDA DE TRANSACCIONES</h1>
+    <form method="GET">{% csrf_token %}
+        <div class="container my-2">
+            <div class="d-flex justify-content-between">
+                <label>Desde:     <input type="date" id="datepicker1" name="datepicker1" min="2023-01-01" value="{{datepicker1}}"></label>
+                <label> Hasta:    <input type="date" id="datepicker2" name="datepicker2" min="2023-01-01" value="{{datepicker2}}"></label>
+                <input id="find" class="btn btn-outline-success rounded-pill px-4 py-2 my-2 my-sm-0" type="submit" value="Buscar">
+            </div>
+        </div>
+    </form>
 
     <table class="table table-bordered">
         <thead>
@@ -51,4 +60,5 @@
         </span>
     </div>
 {% endif %}
+    <script src="{% static 'transactions.js' %}"></script>
 {% endblock %}
