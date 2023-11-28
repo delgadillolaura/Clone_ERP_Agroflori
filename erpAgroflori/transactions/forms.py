@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm
-from .models import Transaction, TicketSale, TicketSaleDetail
+from .models import Transaction, TicketSale, TicketSaleDetail, SouvenirSale, SouvenirSaleDetail
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div,  Submit, Reset
 from django.core.exceptions import ValidationError
@@ -118,8 +118,58 @@ class TicketSaleDetailForm(ModelForm):
         model = TicketSaleDetail
         fields = ['ticket_type', 'promotion_discount', 'promotion_description' ,'ticket_sale', 'quantity'] 
     
+class SouvenirSaleForm(ModelForm):
+    amount = forms.IntegerField(widget=forms.NumberInput(attrs={'id': 'amount-input-id', 'readonly': 'readonly'}))
+    user = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.user_user = kwargs.pop('user', None)
+        super(SouvenirSaleForm, self).__init__(*args, **kwargs)    
+        self.fields['amount'].initial = 0  
+
+        if self.user_user:
+            self.fields['user'].initial = self.user_user
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data['user'] = self.user_user
+        return cleaned_data
+    
+    class Meta:
+        model = SouvenirSale
+        fields = ["date", "method_of_payment", "amount", 'user']
+
+class SouvenirSaleDetailForm(ModelForm):
+    
+    quantity = forms.IntegerField(widget=forms.NumberInput())
+
+    def __init__(self, *args, **kwargs):
+        super(SouvenirSaleDetailForm, self).__init__(*args, **kwargs)
+
+        category_type = 'souvenir'
+        souvenirs_types = SystemTypeCategory.objects.filter(name=category_type)
+        
+        if souvenirs_types:
+            id_souvenir = souvenirs_types.first().id
+            cat_queryset =  SystemType.objects.filter(category=id_souvenir)
+            self.fields['souvenir_type'] = CustomChoiceField(queryset=cat_queryset)
+            self.fields['souvenir_type'].queryset = cat_queryset
+            self.fields['souvenir_type'].widget.attrs['id'] = f"{self.prefix}-souvenir-type"
+            self.fields['souvenir_type'].widget.attrs['class'] = f"souvenir-type-class"
+            self.fields['quantity'].initial = 0
+            self.fields['quantity'].widget.attrs['id'] = f"{self.prefix}-quantity"
+            self.fields['quantity'].widget.attrs['class'] = f"quantity-class"
+    
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        return cleaned_data
+    
+    class Meta:
+        model = SouvenirSaleDetail
+        fields = ['souvenir_type','souvenir_sale', 'quantity'] 
     
      
  
 TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=1)
-
+SouvenirSaleFormSet = inlineformset_factory(SouvenirSale, SouvenirSaleDetail,form=SouvenirSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=6)

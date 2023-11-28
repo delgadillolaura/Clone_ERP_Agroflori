@@ -34,3 +34,24 @@ def register_ticket_sale(request):
         formset=TicketSaleFormSet()
     return render(request, 'ticket.html', {'sale_form': sale_form, 'formset': formset})
     
+
+def register_souvenir_sale(request):
+    if request.method == 'POST':
+        sale_form = SouvenirSaleForm(request.POST, **{'user':request.user})
+        formset = SouvenirSaleFormSet(request.POST)
+        
+        if sale_form.is_valid():
+            souvenir_sale = sale_form.save(commit=True)
+            formset = SouvenirSaleFormSet(request.POST, instance=souvenir_sale)
+            if formset.is_valid():
+                formset.save()
+            else:
+                SouvenirSale.objects.filter(id=sale_form.id).delete()
+            return redirect('home')
+        else:
+            # Print or log form errors
+            print("Form is not valid:", sale_form.errors)
+    else:
+        sale_form = SouvenirSaleForm()
+        formset=SouvenirSaleFormSet()
+    return render(request, 'souvenir.html', {'sale_form': sale_form, 'formset': formset})
