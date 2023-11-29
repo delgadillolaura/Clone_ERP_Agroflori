@@ -1,6 +1,11 @@
+from collections.abc import Mapping
+from typing import Any
 from django import forms
+from django.core.files.base import File
+from django.db.models.base import Model
 from django.forms import ModelForm
-from .models import Transaction, TicketSale, TicketSaleDetail, SouvenirSale, SouvenirSaleDetail
+from django.forms.utils import ErrorList
+from .models import Transaction, TicketSale, TicketSaleDetail, SouvenirSale, SouvenirSaleDetail, FoodSale, FoodSaleDetail
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div,  Submit, Reset
 from django.core.exceptions import ValidationError
@@ -169,7 +174,50 @@ class SouvenirSaleDetailForm(ModelForm):
         model = SouvenirSaleDetail
         fields = ['souvenir_type','souvenir_sale', 'quantity'] 
     
-     
+class FoodSaleForm(ModelForm):
+    amount = forms.IntegerField(widget=forms.NumberInput(attrs={'id': 'amount-input-id', 'readonly': 'readonly'}))
+    user = forms.CharField(widget=forms.HiddenInput(), required=False)
+
+    def __init__(self, *args, **kwargs):
+        self.user_user = kwargs.pop('user', None)
+        super(FoodSaleForm, self).__init__(*args, **kwargs)
+        self.fields['amount'].initial = 0 
+
+        if self.user_user:
+            self.fields['user'].initial = self.user_user
+
+    def clean(self):
+        cleaned_data = super().clean()
+        cleaned_data['user'] = self.user_user
+        return cleaned_data
+    
+    class Meta:
+        model = FoodSale
+        fields = ["date", "method_of_payment", "amount", 'user']
+
+class FoodSaleDetailForm(ModelForm):
+    quantity = forms.IntegerField(widget=forms.NumberInput())
+
+    def __init__(self, *args, **kwargs):
+        super(FoodSaleDetailForm, self).__init__(*args, **kwargs)
+
+        category_type = 'Comida'
+        food_types = SystemTypeCategory.objects.filter(name=category_type)
+
+        if food_types:
+            id_food = food_types.first().id
+            cat_queryset =  SystemType.objects.filter(category=id_food)
+            print(cat_queryset)
+            self.fields['food_type'] = CustomChoiceField(queryset=cat_queryset)
+            self.fields['food_type'].queryset = cat_queryset
+            #self.fields['ticket_type'].initial = cat_queryset.first()
+            self.fields['food_type'].widget.attrs['id'] = f"{self.prefix}-food-type"
+            self.fields['food_type'].widget.attrs['class'] = f"food-type-class"
+            self.fields['quantity'].initial = 0
+            self.fields['quantity'].widget.attrs['id'] = f"{self.prefix}-quantity"
+            self.fields['quantity'].widget.attrs['class'] = f"quantity-class"
+ 
  
 TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=1)
 SouvenirSaleFormSet = inlineformset_factory(SouvenirSale, SouvenirSaleDetail,form=SouvenirSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=6)
+FoodSaleFormSet = inlineformset_factory(FoodSale, FoodSaleDetail,form=FoodSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=4)
