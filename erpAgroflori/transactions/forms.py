@@ -103,7 +103,6 @@ class TicketSaleDetailForm(ModelForm):
             cat_queryset =  SystemType.objects.filter(category=id_ticket)
             self.fields['ticket_type'] = CustomChoiceField(queryset=cat_queryset)
             self.fields['ticket_type'].queryset = cat_queryset
-            #self.fields['ticket_type'].initial = cat_queryset.first()
             self.fields['ticket_type'].widget.attrs['id'] = f"{self.prefix}-ticket-type"
             self.fields['ticket_type'].widget.attrs['class'] = f"ticket-type-class"
             self.fields['quantity'].initial = 0

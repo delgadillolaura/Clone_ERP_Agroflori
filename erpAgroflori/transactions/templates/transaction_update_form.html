@@ -3,7 +3,7 @@
 {% load crispy_forms_tags %}
 {% block title %}Transaction Update{% endblock %}
 {% block content %}
-
+<h1>EDITAR TRANSACCIÓN</h1>
 <form method="post">{% csrf_token %}
     {{ form | crispy }}
     <div class="py-3">
