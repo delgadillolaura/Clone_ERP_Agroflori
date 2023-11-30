@@ -9,7 +9,7 @@ from .models import Transaction, TicketSale, TicketSaleDetail, SouvenirSale, Sou
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Field, Div,  Submit, Reset
 from django.core.exceptions import ValidationError
-from django.forms import inlineformset_factory
+from django.forms import inlineformset_factory, formset_factory
 from .models import SystemType, SystemTypeCategory
 
 class TransactionForm(ModelForm):
@@ -44,6 +44,9 @@ class TransactionForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         cleaned_data['user'] = self.user_user
+
+        if cleaned_data['category'] == 'EX':
+            cleaned_data['category'] = - cleaned_data['category']
         return cleaned_data
     
     def save(self, commit=True):
@@ -89,8 +92,7 @@ class CustomChoiceField(forms.ModelChoiceField):
         
         if queryset is not None:
             self.choices = [(obj.id, f"{obj}:{obj.unitary_price}") for obj in queryset]
-  #         self.choices = [(f"{obj.unitary_price }-{obj.id}", obj) for obj in queryset]
-
+ 
 class TicketSaleDetailForm(ModelForm):
     
     quantity = forms.IntegerField(widget=forms.NumberInput())
@@ -106,7 +108,6 @@ class TicketSaleDetailForm(ModelForm):
             cat_queryset =  SystemType.objects.filter(category=id_ticket)
             self.fields['ticket_type'] = CustomChoiceField(queryset=cat_queryset)
             self.fields['ticket_type'].queryset = cat_queryset
-            #self.fields['ticket_type'].initial = cat_queryset.first()
             self.fields['ticket_type'].widget.attrs['id'] = f"{self.prefix}-ticket-type"
             self.fields['ticket_type'].widget.attrs['class'] = f"ticket-type-class"
             self.fields['quantity'].initial = 0
@@ -218,6 +219,14 @@ class FoodSaleDetailForm(ModelForm):
             self.fields['quantity'].widget.attrs['class'] = f"quantity-class"
  
  
-TicketSaleFormSet = inlineformset_factory(TicketSale, TicketSaleDetail,form=TicketSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=1)
+
 SouvenirSaleFormSet = inlineformset_factory(SouvenirSale, SouvenirSaleDetail,form=SouvenirSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=6)
 FoodSaleFormSet = inlineformset_factory(FoodSale, FoodSaleDetail,form=FoodSaleDetailForm, exclude=[], min_num=1, max_num=4, extra=4)
+
+TicketSaleFormSet = inlineformset_factory(
+    TicketSale, TicketSaleDetail, form=TicketSaleDetailForm,
+    exclude=[], min_num=1, max_num=4, extra=1
+)
+
+TransactionFormSet = formset_factory(TransactionForm)
+

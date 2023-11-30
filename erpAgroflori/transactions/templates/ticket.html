@@ -15,9 +15,11 @@
 
         {{ formset.management_form }}
         {% for form in formset %}
-            {{ form }}
+        <div>
+            {{ form.as_table}}
             <label>Monto:<input id="{{ form.prefix }}-amount" type="text" class="amount-input-class" value='0' readonly></label>
             <hr>
+        </div>
         {% endfor %}
 
         {% if formset.errors %}
@@ -29,10 +31,9 @@
         {% endif %}
         
         {% for error in formset.non_form_errors %}
-            <p>f</p>
             <span style="color: red">{{ error }}</span>
         {% endfor %}
-        <button type="submit" class="btn btn-success">Guardar</button>
+        <button type="submit" class="btn btn-outline-success rounded-pill px-4 py-2 my-2 my-sm-0">Guardar</button>
     </form>
         
     

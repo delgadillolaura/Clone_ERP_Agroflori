@@ -1,7 +1,11 @@
 from django.shortcuts import render, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView
+from django.views.generic.edit import UpdateView
 from django.forms import inlineformset_factory
 from .forms import *
 from .models import *
+from django.db.models import Q
 
 # Create your views here.
 def make_transaction(request):
@@ -20,6 +24,9 @@ def register_ticket_sale(request):
         
         if sale_form.is_valid():
             ticket_sale = sale_form.save(commit=True)
+            ticket_sale.transaction_ptr.category = "IN"
+            ticket_sale.transaction_ptr.description = f"Venta de entradas {ticket_sale.date}"
+            ticket_sale.transaction_ptr.save()
             formset = TicketSaleFormSet(request.POST, instance=ticket_sale)
             if formset.is_valid():
                 formset.save()
@@ -76,3 +83,28 @@ def register_food_sale(request):
         sale_form = FoodSaleForm()
         formset=FoodSaleFormSet()
     return render(request, 'food.html', {'sale_form': sale_form, 'formset': formset})
+class TransactionListView(ListView):
+    model = Transaction
+    context_object_name = "transactions"
+    template_name = "transaction_list.html"
+    paginate_by = 10 
+
+    def get_queryset(self):
+        queryset = Transaction.objects.all()  # Initial queryset
+        if (self.request.GET.get('datepicker1') is not None):
+            start_date = self.request.GET.get('datepicker1')
+            end_date = self.request.GET.get('datepicker2')
+            queryset = Transaction.objects.filter(Q(date__gte=start_date) & Q(date__lte=end_date))
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['datepicker1'] = self.request.GET.get('datepicker1', '')
+        context['datepicker2'] = self.request.GET.get('datepicker2', '')
+        return context
+    
+class TransactionUpdateView(UpdateView):
+    model = Transaction
+    fields = '__all__'
+    template_name = "transaction_update_form.html"
+    success_url = reverse_lazy("search-transactions")
