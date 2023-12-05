@@ -49,6 +49,9 @@ def register_souvenir_sale(request):
         
         if sale_form.is_valid():
             souvenir_sale = sale_form.save(commit=True)
+            souvenir_sale.transaction_ptr.category = "IN"
+            souvenir_sale.transaction_ptr.description = f"Souvenir sale {souvenir_sale.date}"
+            souvenir_sale.transaction_ptr.save()
             formset = SouvenirSaleFormSet(request.POST, instance=souvenir_sale)
             if formset.is_valid():
                 formset.save()
@@ -70,6 +73,9 @@ def register_food_sale(request):
         
         if sale_form.is_valid():
             food_sale = sale_form.save(commit=True)
+            food_sale.transaction_ptr.category = "IN"
+            food_sale.transaction_ptr.description = f"Food sale {food_sale.date}"
+            food_sale.transaction_ptr.save()
             formset = FoodSaleFormSet(request.POST, instance=food_sale)
             if formset.is_valid():
                 formset.save()
