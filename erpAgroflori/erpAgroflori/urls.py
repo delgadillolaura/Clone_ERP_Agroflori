@@ -20,7 +20,8 @@ from registration import views as v
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("users.urls")),
     path('', include("registration.urls")),
+    path('', include("users.urls")),
     path('', include("transactions.urls")),
+    path('accounts/', include('allauth.urls')),
 ]
